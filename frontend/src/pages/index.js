@@ -2,10 +2,6 @@ import Home from './customerPages/Home.jsx'
 import Shop from './customerPages/Shop.jsx'
 import Category from './customerPages/Category.jsx'
 import Collections from './customerPages/Collections.jsx'
-import About from './customerPages/About.jsx'
-import Contact from './customerPages/Contact.jsx'
-import Shipping from './customerPages/Shipping.jsx'
-import Faq from './customerPages/Faq.jsx'
 import NotFound from './customerPages/NotFound.jsx'
 import ProductDetail from './customerPages/ProductDetail.jsx'
 import Cart from './customerPages/Cart.jsx'
@@ -18,16 +14,16 @@ import MyOrders from './customerPages/MyOrders.jsx'
 import OrderDetails from './customerPages/OrderDetails.jsx'
 import SignInPage from './authenticationPages/SignInPage.jsx'
 import SignUpPage from './authenticationPages/SignUpPage.jsx'
+import AboutUs from './info/AboutUs.jsx'
+import ContactUs from './info/ContactUs.jsx'
+import FAQ from './info/FAQ.jsx'
+import ReturnRefundPolicy from './info/ReturnRefundPolicy.jsx'
 
 export {
   Home,
   Shop,
   Category,
   Collections,
-  About,
-  Contact,
-  Shipping,
-  Faq,
   NotFound,
   ProductDetail,
   Cart,
@@ -40,4 +36,8 @@ export {
   OrderDetails,
   SignInPage,
   SignUpPage,
+  AboutUs,
+  ContactUs,
+  FAQ,
+  ReturnRefundPolicy,
 }

@@ -13,10 +13,10 @@ import {
   Shop,
   Category,
   Collections,
-  About,
-  Contact,
-  Shipping,
-  Faq,
+  AboutUs,
+  ContactUs,
+  ReturnRefundPolicy,
+  FAQ,
   NotFound,
   ProductDetail,
   Cart,
@@ -54,19 +54,31 @@ const router = createBrowserRouter([
       },
       {
         path: '/about',
-        element: <About />,
+        element: <AboutUs />,
+      },
+      {
+        path: '/about-us',
+        element: <Navigate to="/about" replace />,
       },
       {
         path: '/contact',
-        element: <Contact />,
+        element: <ContactUs />,
+      },
+      {
+        path: '/contact-us',
+        element: <Navigate to="/contact" replace />,
       },
       {
         path: '/shipping',
-        element: <Shipping />,
+        element: <ReturnRefundPolicy />,
+      },
+      {
+        path: '/returns',
+        element: <Navigate to="/shipping" replace />,
       },
       {
         path: '/faq',
-        element: <Faq />,
+        element: <FAQ />,
       },
       {
         path: '/product/:id',

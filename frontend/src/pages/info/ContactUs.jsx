@@ -1,6 +1,6 @@
 import { CarePageHeader, ContactFormSection } from '../../components/care'
 
-const Contact = () => {
+const ContactUs = () => {
   return (
     <>
       <CarePageHeader
@@ -12,5 +12,4 @@ const Contact = () => {
   )
 }
 
-export default Contact
-
+export default ContactUs

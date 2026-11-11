@@ -1,7 +1,7 @@
 import { CarePageHeader, FaqAccordion } from '../../components/care'
 import { FAQ_CATEGORIES, FAQ_ITEMS } from '../../data/editorialData.js'
 
-const Faq = () => {
+const FAQ = () => {
   return (
     <>
       <CarePageHeader
@@ -13,5 +13,4 @@ const Faq = () => {
   )
 }
 
-export default Faq
-
+export default FAQ

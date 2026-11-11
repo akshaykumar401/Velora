@@ -1,7 +1,7 @@
 import { CarePageHeader, ShippingPolicies } from '../../components/care'
 import { RETURN_STEPS, SHIPPING_METHODS } from '../../data/editorialData.js'
 
-const Shipping = () => {
+const ReturnRefundPolicy = () => {
   return (
     <>
       <CarePageHeader
@@ -16,5 +16,4 @@ const Shipping = () => {
   )
 }
 
-export default Shipping
-
+export default ReturnRefundPolicy

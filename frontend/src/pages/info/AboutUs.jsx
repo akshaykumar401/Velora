@@ -6,7 +6,7 @@ import {
 } from '../../data/editorialData.js'
 import { PHILOSOPHY_DATA } from '../../data/homeData.js'
 
-const About = () => {
+const AboutUs = () => {
   return (
     <>
       <AboutHero />
@@ -20,5 +20,4 @@ const About = () => {
   )
 }
 
-export default About
-
+export default AboutUs
