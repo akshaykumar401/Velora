@@ -10,6 +10,12 @@ import {
   SignedInActiveCard,
 } from './auth'
 import {
+  AdminLayout,
+  AdminProtectedRoute,
+  AdminStatCard,
+  AdminPageHeader,
+} from './admin'
+import {
   HeroSection,
   CuratedCategories,
   TrendingProducts,
@@ -55,6 +61,10 @@ export {
   ClerkSetupNotice,
   ProtectedRoute,
   SignedInActiveCard,
+  AdminLayout,
+  AdminProtectedRoute,
+  AdminStatCard,
+  AdminPageHeader,
   HeroSection,
   CuratedCategories,
   TrendingProducts,

@@ -5,7 +5,9 @@ import App from './App.jsx'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { ClerkAuthProvider } from './features/auth/ClerkAuthProvider.jsx'
 import { StoreProvider } from './features/store/StoreProvider.jsx'
+import { AdminProvider } from './features/admin/AdminProvider.jsx'
 import { ProtectedRoute } from './components/auth'
+import { AdminLayout, AdminProtectedRoute } from './components/admin'
 
 // Pages Import
 import {
@@ -29,6 +31,15 @@ import {
   OrderDetails,
   SignInPage,
   SignUpPage,
+  AddCategory,
+  AddProduct,
+  AdminAuth,
+  AdminDashboard,
+  AdminProfile,
+  ManageOrders,
+  ManageProducts,
+  ManageReviews,
+  AdminOrderDetails,
 } from './pages'
 
 const router = createBrowserRouter([
@@ -174,13 +185,61 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/admin/login',
+    element: <AdminAuth />,
+  },
+  {
+    path: '/admin',
+    element: (
+      <AdminProtectedRoute>
+        <AdminLayout />
+      </AdminProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <AdminDashboard />,
+      },
+      {
+        path: 'products',
+        element: <ManageProducts />,
+      },
+      {
+        path: 'products/new',
+        element: <AddProduct />,
+      },
+      {
+        path: 'categories/new',
+        element: <AddCategory />,
+      },
+      {
+        path: 'orders',
+        element: <ManageOrders />,
+      },
+      {
+        path: 'orders/:id',
+        element: <AdminOrderDetails />,
+      },
+      {
+        path: 'reviews',
+        element: <ManageReviews />,
+      },
+      {
+        path: 'profile',
+        element: <AdminProfile />,
+      },
+    ],
+  },
 ])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ClerkAuthProvider>
       <StoreProvider>
-        <RouterProvider router={router} />
+        <AdminProvider>
+          <RouterProvider router={router} />
+        </AdminProvider>
       </StoreProvider>
     </ClerkAuthProvider>
   </StrictMode>,

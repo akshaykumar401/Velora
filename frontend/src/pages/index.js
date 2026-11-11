@@ -18,6 +18,15 @@ import AboutUs from './info/AboutUs.jsx'
 import ContactUs from './info/ContactUs.jsx'
 import FAQ from './info/FAQ.jsx'
 import ReturnRefundPolicy from './info/ReturnRefundPolicy.jsx'
+import AddCategory from './admin/AddCategory.jsx'
+import AddProduct from './admin/AddProduct.jsx'
+import AdminAuth from './admin/AdminAuth.jsx'
+import AdminDashboard from './admin/AdminDashboard.jsx'
+import AdminProfile from './admin/AdminProfile.jsx'
+import ManageOrders from './admin/ManageOrders.jsx'
+import ManageProducts from './admin/ManageProducts.jsx'
+import ManageReviews from './admin/ManageReviews.jsx'
+import AdminOrderDetails from './admin/OrderDetails.jsx'
 
 export {
   Home,
@@ -40,4 +49,13 @@ export {
   ContactUs,
   FAQ,
   ReturnRefundPolicy,
+  AddCategory,
+  AddProduct,
+  AdminAuth,
+  AdminDashboard,
+  AdminProfile,
+  ManageOrders,
+  ManageProducts,
+  ManageReviews,
+  AdminOrderDetails,
 }
