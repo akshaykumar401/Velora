@@ -13,8 +13,8 @@ const VeloraCircleSection = () => {
 
   return (
     <section className="pb-16 sm:pb-24 pt-4 bg-[#FCF9F2]">
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 lg:px-12">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#F4ECE1] via-[#EFEAE1] to-[#EAE4DA] px-6 sm:px-12 py-14 sm:py-20 text-center">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#F4ECE1] via-[#EFEAE1] to-[#EAE4DA] px-4 sm:px-12 py-12 sm:py-20 text-center">
           {/* Subtle warm radial ambient accents */}
           <div
             aria-hidden="true"
@@ -51,7 +51,7 @@ const VeloraCircleSection = () => {
                 }}
                 placeholder="Enter your email address"
                 aria-label="Email address for private access"
-                className="flex-1 bg-[#FCF9F2] px-4 py-3 text-[12.5px] text-[#1A1816] placeholder:text-[#969087] border border-transparent focus:border-[#C8C0B4] focus:outline-none transition-colors"
+                className="w-full min-w-0 flex-1 bg-[#FCF9F2] px-4 py-3 text-[12.5px] text-[#1A1816] placeholder:text-[#969087] border border-transparent focus:border-[#C8C0B4] focus:outline-none transition-colors"
               />
               <button
                 type="submit"

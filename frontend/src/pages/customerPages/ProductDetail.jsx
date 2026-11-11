@@ -41,29 +41,29 @@ const ProductDetail = () => {
   return (
     <>
       <section className="py-10 sm:py-14 lg:py-16 bg-[#FCF9F2]">
-        <div className="max-w-[1360px] mx-auto px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12">
           {/* Breadcrumb */}
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-[11px] tracking-[0.12em] uppercase text-[#8A8379] mb-8"
+            className="flex flex-wrap items-center gap-1.5 text-[11px] tracking-[0.12em] uppercase text-[#8A8379] mb-8 min-w-0"
           >
             <Link to="/" className="hover:text-[#1A1816] transition-colors">
               Home
             </Link>
-            <RiArrowRightSLine size={14} aria-hidden="true" />
+            <RiArrowRightSLine size={14} aria-hidden="true" className="shrink-0" />
             <Link to="/shop" className="hover:text-[#1A1816] transition-colors">
               Shop
             </Link>
-            <RiArrowRightSLine size={14} aria-hidden="true" />
-            <span className="text-[#1A1816] truncate">{product.name}</span>
+            <RiArrowRightSLine size={14} aria-hidden="true" className="shrink-0" />
+            <span className="text-[#1A1816] truncate max-w-full">{product.name}</span>
           </nav>
 
           {/* 2-Column Product Showcase */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-            <div className="lg:col-span-6">
+            <div className="lg:col-span-6 min-w-0">
               <ProductGallery product={product} />
             </div>
-            <div className="lg:col-span-6">
+            <div className="lg:col-span-6 min-w-0">
               <ProductInfo key={product.id} product={product} />
             </div>
           </div>

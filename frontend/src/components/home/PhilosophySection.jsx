@@ -34,7 +34,7 @@ const PhilosophySection = ({ image }) => {
           </div>
 
           {/* Editorial Copy */}
-          <div className="lg:col-span-6 lg:pl-4 max-w-[520px]">
+          <div className="lg:col-span-6 lg:pl-4 max-w-[520px] min-w-0">
             <p className="text-[10px] tracking-[0.24em] uppercase text-[#8A8379] mb-2.5">
               OUR PHILOSOPHY
             </p>
@@ -54,7 +54,7 @@ const PhilosophySection = ({ image }) => {
 
             <Link
               to="/about"
-              className="inline-flex items-center gap-2.5 text-[10.5px] font-medium tracking-[0.18em] uppercase text-[#1A1816] border-b border-[#1A1816]/40 pb-1.5 hover:border-[#1A1816] transition-colors"
+              className="inline-flex items-center gap-2 text-[10px] sm:text-[10.5px] font-medium tracking-[0.14em] sm:tracking-[0.18em] uppercase text-[#1A1816] border-b border-[#1A1816]/40 pb-1.5 hover:border-[#1A1816] transition-colors max-w-full"
             >
               <span>READ OUR SUSTAINABILITY CHARTER</span>
               <RiArrowRightLine size={14} aria-hidden="true" />

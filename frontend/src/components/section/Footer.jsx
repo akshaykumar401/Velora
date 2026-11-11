@@ -26,7 +26,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-[#F6F3EC] text-[#1A1816]">
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 lg:px-12 pt-14 pb-12">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12 pt-14 pb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-3">
@@ -96,7 +96,7 @@ const Footer = () => {
                   }}
                   placeholder="Enter your email"
                   aria-label="Email address"
-                  className="w-full bg-transparent text-[12.5px] text-[#1A1816] placeholder:text-[#969087] focus:outline-none pr-3"
+                  className="w-full min-w-0 bg-transparent text-[12.5px] text-[#1A1816] placeholder:text-[#969087] focus:outline-none pr-3"
                 />
                 <button
                   type="submit"

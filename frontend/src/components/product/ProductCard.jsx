@@ -1,11 +1,26 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { RiHeartFill, RiHeartLine } from '@remixicon/react'
+import { useAuthStatus } from '../../features/auth/authContext.js'
 import { useStore } from '../../features/store/storeContext.js'
 
 const ProductCard = ({ product }) => {
+  const { isSignedIn } = useAuthStatus()
   const { isWishlisted, toggleWishlist } = useStore()
-  const wishlisted = isWishlisted(product.id)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const wishlisted = isSignedIn && isWishlisted(product.id)
   const productHref = product.id ? `/product/${product.id}` : product.to || '/shop'
+
+  const handleWishlistClick = () => {
+    if (!isSignedIn) {
+      navigate('/sign-in', {
+        state: { from: `${location.pathname}${location.search}` },
+      })
+      return
+    }
+    toggleWishlist(product.id)
+  }
 
   return (
     <article className="group">
@@ -37,11 +52,14 @@ const ProductCard = ({ product }) => {
 
         <button
           type="button"
-          onClick={() => toggleWishlist(product.id)}
+          onClick={handleWishlistClick}
+          title={isSignedIn ? 'Toggle wishlist' : 'Sign in to save to wishlist'}
           aria-label={
-            wishlisted
-              ? `Remove ${product.name} from wishlist`
-              : `Save ${product.name} to wishlist`
+            !isSignedIn
+              ? `Sign in to save ${product.name} to wishlist`
+              : wishlisted
+                ? `Remove ${product.name} from wishlist`
+                : `Save ${product.name} to wishlist`
           }
           aria-pressed={wishlisted}
           className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${

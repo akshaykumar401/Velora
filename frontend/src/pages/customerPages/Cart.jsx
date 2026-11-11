@@ -56,7 +56,7 @@ const Cart = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 pt-6">
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 min-w-0">
               {cartItems.map((item) => (
                 <CartItemRow
                   key={item.key}
@@ -77,7 +77,7 @@ const Cart = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 min-w-0">
               <OrderSummary subtotal={cartSubtotal} itemCount={cartCount} />
             </div>
           </div>

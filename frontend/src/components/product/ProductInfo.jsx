@@ -1,11 +1,14 @@
 import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   RiAddLine,
   RiCheckLine,
   RiHeartFill,
   RiHeartLine,
+  RiLockLine,
   RiSubtractLine,
 } from '@remixicon/react'
+import { useAuthStatus } from '../../features/auth/authContext.js'
 import { useStore } from '../../features/store/storeContext.js'
 
 const ACCORDION_ITEMS = [
@@ -19,7 +22,11 @@ const ACCORDION_ITEMS = [
 ]
 
 const ProductInfo = ({ product }) => {
+  const { isSignedIn } = useAuthStatus()
   const { addToCart, isWishlisted, toggleWishlist } = useStore()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const [selectedColor, setSelectedColor] = useState(
     () => product.colors?.[0]?.name || 'Default',
   )
@@ -30,9 +37,19 @@ const ProductInfo = ({ product }) => {
   const [addedFeedback, setAddedFeedback] = useState(false)
   const [openSection, setOpenSection] = useState('fabric')
 
-  const wishlisted = isWishlisted(product.id)
+  const wishlisted = isSignedIn && isWishlisted(product.id)
+
+  const redirectToSignIn = () => {
+    navigate('/sign-in', {
+      state: { from: `${location.pathname}${location.search}` },
+    })
+  }
 
   const handleAddToBag = () => {
+    if (!isSignedIn) {
+      redirectToSignIn()
+      return
+    }
     addToCart({
       productId: product.id,
       size: selectedSize,
@@ -41,6 +58,14 @@ const ProductInfo = ({ product }) => {
     })
     setAddedFeedback(true)
     window.setTimeout(() => setAddedFeedback(false), 1800)
+  }
+
+  const handleWishlist = () => {
+    if (!isSignedIn) {
+      redirectToSignIn()
+      return
+    }
+    toggleWishlist(product.id)
   }
 
   return (
@@ -125,59 +150,87 @@ const ProductInfo = ({ product }) => {
         </div>
       )}
 
-      {/* Quantity + Add to Bag + Wishlist */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-9">
-        <div className="flex items-center justify-between border border-[#D8D1C5] px-3 py-2.5 sm:w-28">
+      {/* Purchase / Auth-Gated Actions */}
+      {isSignedIn ? (
+        <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-9">
+          <div className="flex items-center justify-between border border-[#D8D1C5] px-3 py-2.5 sm:w-28">
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              aria-label="Decrease quantity"
+              className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+            >
+              <RiSubtractLine size={15} aria-hidden="true" />
+            </button>
+            <span className="text-[13px] font-medium text-[#1A1816]">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => q + 1)}
+              aria-label="Increase quantity"
+              className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+            >
+              <RiAddLine size={15} aria-hidden="true" />
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            aria-label="Decrease quantity"
-            className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+            onClick={handleAddToBag}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[11px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
-            <RiSubtractLine size={15} aria-hidden="true" />
+            {addedFeedback ? (
+              <>
+                <RiCheckLine size={15} aria-hidden="true" />
+                <span>ADDED TO BAG</span>
+              </>
+            ) : (
+              <span>ADD TO BAG</span>
+            )}
           </button>
-          <span className="text-[13px] font-medium text-[#1A1816]">
-            {quantity}
-          </span>
+
           <button
             type="button"
-            onClick={() => setQuantity((q) => q + 1)}
-            aria-label="Increase quantity"
-            className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+            onClick={handleWishlist}
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-pressed={wishlisted}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3.5 border border-[#D8D1C5] text-[#1A1816] hover:border-[#1A1816] transition-colors cursor-pointer"
           >
-            <RiAddLine size={15} aria-hidden="true" />
+            {wishlisted ? (
+              <RiHeartFill size={17} aria-hidden="true" />
+            ) : (
+              <RiHeartLine size={17} aria-hidden="true" />
+            )}
           </button>
         </div>
+      ) : (
+        <div className="mb-9 bg-[#F6F3EC] border border-[#EAE5DC] p-5 space-y-3.5">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3">
+            <Link
+              to="/sign-in"
+              state={{ from: `${location.pathname}${location.search}` }}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[11px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors"
+            >
+              <RiLockLine size={14} aria-hidden="true" />
+              <span>SIGN IN TO PURCHASE</span>
+            </Link>
 
-        <button
-          type="button"
-          onClick={handleAddToBag}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[11px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
-        >
-          {addedFeedback ? (
-            <>
-              <RiCheckLine size={15} aria-hidden="true" />
-              <span>ADDED TO BAG</span>
-            </>
-          ) : (
-            <span>ADD TO BAG</span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => toggleWishlist(product.id)}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-          aria-pressed={wishlisted}
-          className="inline-flex items-center justify-center gap-2 px-4 py-3.5 border border-[#D8D1C5] text-[#1A1816] hover:border-[#1A1816] transition-colors cursor-pointer"
-        >
-          {wishlisted ? (
-            <RiHeartFill size={17} aria-hidden="true" />
-          ) : (
-            <RiHeartLine size={17} aria-hidden="true" />
-          )}
-        </button>
-      </div>
+            <button
+              type="button"
+              onClick={handleWishlist}
+              aria-label="Sign in to save to wishlist"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 border border-[#D8D1C5] bg-[#FCF9F2] text-[#1A1816] hover:border-[#1A1816] transition-colors cursor-pointer"
+            >
+              <RiHeartLine size={17} aria-hidden="true" />
+            </button>
+          </div>
+          <p className="text-[12px] leading-[1.6] text-[#666058]">
+            Sign in with your Velora account to unlock adding items to your bag,
+            saving to your wishlist, and checkout.
+          </p>
+        </div>
+      )}
 
       {/* Accordion Details */}
       <div className="border-t border-[#E6E1D7]">

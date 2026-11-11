@@ -42,12 +42,12 @@ const HeroSection = ({
       />
 
       {/* Center Content */}
-      <div className="relative z-10 max-w-[680px] mx-auto px-5 sm:px-8 text-center pt-10 pb-16">
-        <p className="text-[10px] sm:text-[11px] font-medium tracking-[0.28em] uppercase text-[#403B34] mb-3.5">
+      <div className="relative z-10 w-full max-w-[680px] mx-auto px-4 sm:px-8 text-center pt-10 pb-16">
+        <p className="text-[9.5px] sm:text-[11px] font-medium tracking-[0.2em] sm:tracking-[0.28em] uppercase text-[#403B34] mb-3.5">
           {eyebrow}
         </p>
 
-        <h1 className="font-serif text-[38px] sm:text-[52px] lg:text-[62px] font-normal leading-[1.06] tracking-[-0.01em] text-[#1A1816] mb-4">
+        <h1 className="font-serif text-[32px] sm:text-[52px] lg:text-[62px] font-normal leading-[1.06] tracking-[-0.01em] text-[#1A1816] mb-4">
           {title}
         </h1>
 
