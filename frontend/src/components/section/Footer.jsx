@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { catalogApi } from '../../services/catalogApi.js'
 
 const NAVIGATION_LINKS = [
   { label: 'About', to: '/about' },
@@ -16,12 +17,24 @@ const CUSTOMER_CARE_LINKS = [
 const Footer = () => {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault()
-    if (!email.trim()) return
-    setSubscribed(true)
-    setEmail('')
+    if (!email.trim() || submitting) return
+    setSubmitting(true)
+    setError('')
+    setSubscribed(false)
+    try {
+      await catalogApi.subscribeNewsletter(email.trim(), 'footer')
+      setSubscribed(true)
+      setEmail('')
+    } catch (err) {
+      setError(err?.message || 'Unable to subscribe right now.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -93,6 +106,7 @@ const Footer = () => {
                   onChange={(e) => {
                     setEmail(e.target.value)
                     if (subscribed) setSubscribed(false)
+                    if (error) setError('')
                   }}
                   placeholder="Enter your email"
                   aria-label="Email address"
@@ -100,11 +114,17 @@ const Footer = () => {
                 />
                 <button
                   type="submit"
-                  className="text-[11px] font-medium tracking-[0.18em] uppercase text-[#1A1816] hover:opacity-65 transition-opacity shrink-0 cursor-pointer"
+                  disabled={submitting}
+                  className="text-[11px] font-medium tracking-[0.18em] uppercase text-[#1A1816] hover:opacity-65 disabled:opacity-50 transition-opacity shrink-0 cursor-pointer"
                 >
-                  JOIN
+                  {submitting ? 'JOINING' : 'JOIN'}
                 </button>
               </div>
+              {error && (
+                <p role="alert" className="text-[11.5px] text-[#8E2A20] mt-2">
+                  {error}
+                </p>
+              )}
               {subscribed && (
                 <p className="text-[11.5px] text-[#5B564F] mt-2">
                   Thank you for joining the Velora Circle.

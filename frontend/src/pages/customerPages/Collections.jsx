@@ -1,7 +1,31 @@
+import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { useAppSelector } from '../../App/hooks.js'
 import { CollectionShowcaseCard } from '../../components/collections'
-import { COLLECTIONS } from '../../data/editorialData.js'
+import { productMatchesCategory } from '../../utils/catalog.js'
 
 const Collections = () => {
+  const { categories, products } = useAppSelector((state) => state.catalog)
+
+  const collections = useMemo(
+    () =>
+      categories
+        .map((cat) => ({
+          id: cat.id,
+          season: cat.indexLabel,
+          title: cat.title,
+          description: cat.subtitle,
+          ctaTo: `/shop?category=${cat.slug}`,
+          coverImage: cat.image,
+          placeholderBg: cat.placeholderBg,
+          products: products
+            .filter((p) => productMatchesCategory(p, cat))
+            .slice(0, 3),
+        }))
+        .filter((col) => col.products.length > 0 || col.title),
+    [categories, products],
+  )
+
   return (
     <>
       <section className="pt-12 pb-10 sm:pt-16 sm:pb-12 bg-[#FCF9F2] border-b border-[#EAE5DC]">
@@ -23,13 +47,31 @@ const Collections = () => {
 
       <section className="bg-[#FCF9F2]">
         <div className="max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12">
-          {COLLECTIONS.map((collection, idx) => (
-            <CollectionShowcaseCard
-              key={collection.id}
-              collection={collection}
-              reversed={idx % 2 === 1}
-            />
-          ))}
+          {collections.length === 0 ? (
+            <div className="py-20 text-center max-w-[480px] mx-auto">
+              <p className="font-serif text-[26px] text-[#1A1816] mb-3">
+                No collections published yet
+              </p>
+              <p className="text-[13px] text-[#6D6860] mb-6">
+                Add categories and products in the Admin Console to populate your
+                seasonal capsules.
+              </p>
+              <Link
+                to="/shop"
+                className="inline-block px-7 py-3 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase"
+              >
+                EXPLORE SHOP
+              </Link>
+            </div>
+          ) : (
+            collections.map((collection, idx) => (
+              <CollectionShowcaseCard
+                key={collection.id}
+                collection={collection}
+                reversed={idx % 2 === 1}
+              />
+            ))
+          )}
         </div>
       </section>
     </>
@@ -37,4 +79,3 @@ const Collections = () => {
 }
 
 export default Collections
-

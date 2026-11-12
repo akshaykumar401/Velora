@@ -7,6 +7,7 @@ import {
   RiExternalLinkLine,
   RiFileList3Line,
   RiFolderAddLine,
+  RiImageEditLine,
   RiLogoutBoxRLine,
   RiMenuLine,
   RiPriceTag3Line,
@@ -47,6 +48,12 @@ const ADMIN_NAV = [
     to: '/admin/reviews',
     end: true,
     Icon: RiStarLine,
+  },
+  {
+    label: 'Hero Banner',
+    to: '/admin/storefront',
+    end: true,
+    Icon: RiImageEditLine,
   },
   {
     label: 'Admin Profile',

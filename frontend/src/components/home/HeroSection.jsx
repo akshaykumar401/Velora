@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RiArrowDownSLine } from '@remixicon/react'
 
@@ -7,13 +8,17 @@ const HeroSection = ({
   title = 'Timeless Elegance, Modern Craft',
   subtitle = 'Immaculate tailoring, noble materials, and effortless silhouettes designed for the discerning wardrobe.',
 }) => {
+  const [failedImageSrc, setFailedImageSrc] = useState('')
+  const showImage = Boolean(image) && failedImageSrc !== image
+
   return (
     <section className="relative overflow-hidden bg-[#EAE3D7] min-h-[540px] sm:min-h-[620px] lg:min-h-[700px] flex items-center justify-center">
       {/* Background Editorial Photography */}
-      {image ? (
+      {showImage ? (
         <img
           src={image}
           alt="Velora Autumn Winter editorial look"
+          onError={() => setFailedImageSrc(image)}
           className="absolute inset-0 w-full h-full object-cover object-top"
         />
       ) : (

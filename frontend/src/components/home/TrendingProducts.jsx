@@ -64,11 +64,22 @@ const TrendingProducts = ({ products = [] }) => {
         </div>
 
         {/* 4-Column Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
-          {visibleProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {visibleProducts.length === 0 ? (
+          <div className="border border-[#EAE5DC] bg-[#F6F3EC] p-10 text-center">
+            <p className="font-serif text-[22px] text-[#1A1816] mb-2">
+              No products in the collection yet
+            </p>
+            <p className="text-[13px] text-[#6D6860]">
+              New arrivals published in the Admin Console will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+            {visibleProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

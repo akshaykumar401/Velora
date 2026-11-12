@@ -1,7 +1,13 @@
 import { useState } from 'react'
-import { RiCheckLine, RiDeleteBinLine } from '@remixicon/react'
-import { AdminPageHeader } from '../../components/admin'
+import {
+  RiCheckLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiEditLine,
+} from '@remixicon/react'
+import { AdminImageField, AdminPageHeader } from '../../components/admin'
 import { useAdmin } from '../../features/admin/adminContext.js'
+import { toCategorySlug } from '../../utils/catalog.js'
 
 const inputClass =
   'w-full min-w-0 bg-[#FCF9F2] border border-[#D8D1C5] px-3.5 py-2.5 text-[13px] text-[#1A1816] placeholder:text-[#969087] focus:border-[#1A1816] focus:outline-none transition-colors'
@@ -9,54 +15,122 @@ const inputClass =
 const labelClass =
   'block text-[10px] tracking-[0.18em] uppercase text-[#78736B] mb-1.5'
 
+const createEmptyForm = (nextIndex = 1) => ({
+  title: '',
+  slug: '',
+  indexLabel: `${String(nextIndex).padStart(2, '0')} / CAPSULE`,
+  subtitle: '',
+  featured: false,
+  image: '',
+})
+
 const AddCategory = () => {
-  const { categories, addCategory, deleteCategory } = useAdmin()
-  const [form, setForm] = useState({
-    title: '',
-    slug: '',
-    indexLabel: '07 / CAPSULE',
-    subtitle: '',
-    featured: false,
-  })
-  const [createdName, setCreatedName] = useState('')
+  const { categories, addCategory, updateCategory, deleteCategory } = useAdmin()
+  const [form, setForm] = useState(() => createEmptyForm(1))
+  const [editingSlug, setEditingSlug] = useState('')
+  const [imageFile, setImageFile] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState('')
+  const [error, setError] = useState('')
 
   const handleTitleChange = (val) => {
-    const autoSlug = val
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-    setForm((prev) => ({ ...prev, title: val, slug: autoSlug }))
-    if (createdName) setCreatedName('')
+    setForm((prev) => ({
+      ...prev,
+      title: val,
+      slug: editingSlug ? prev.slug : toCategorySlug(val),
+    }))
+    if (feedback) setFeedback('')
+    if (error) setError('')
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const created = addCategory(form)
-    setCreatedName(created.title)
+  const startEdit = (cat) => {
+    setEditingSlug(cat.slug)
     setForm({
-      title: '',
-      slug: '',
-      indexLabel: `${String(categories.length + 2).padStart(2, '0')} / CAPSULE`,
-      subtitle: '',
-      featured: false,
+      title: cat.title || '',
+      slug: cat.slug || '',
+      indexLabel: cat.indexLabel || '01 / CAPSULE',
+      subtitle: cat.subtitle || '',
+      featured: Boolean(cat.featured),
+      image: cat.image || '',
     })
+    setImageFile(null)
+    setFeedback('')
+    setError('')
+  }
+
+  const cancelEdit = () => {
+    setEditingSlug('')
+    setForm(createEmptyForm(categories.length + 1))
+    setImageFile(null)
+    setError('')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setFeedback('')
+    setSubmitting(true)
+    try {
+      const payload = {
+        ...form,
+        slug: toCategorySlug(form.slug || form.title),
+        image: imageFile ? null : form.image.trim() || null,
+        imageFile,
+      }
+      if (editingSlug) {
+        const updated = await updateCategory(editingSlug, payload)
+        setFeedback(`Category “${updated.title}” updated.`)
+        setEditingSlug('')
+      } else {
+        const created = await addCategory(payload)
+        setFeedback(`Category “${created.title}” created.`)
+      }
+      setForm(createEmptyForm(categories.length + 2))
+      setImageFile(null)
+    } catch (err) {
+      setError(err?.message || 'Failed to save category')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (cat) => {
+    setError('')
+    setFeedback('')
+    const result = await deleteCategory(cat.id)
+    if (result?.meta?.requestStatus === 'rejected') {
+      setError(result.payload || 'Failed to delete category')
+      return
+    }
+    if (editingSlug === cat.slug) {
+      cancelEdit()
+    }
   }
 
   return (
     <div>
       <AdminPageHeader
         eyebrow="TAXONOMY"
-        title="Add Category"
-        subtitle="Create and organize storefront departments and curated capsules."
+        title="Manage Categories"
+        subtitle="Create, update, and organize storefront departments and curated capsules."
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Form */}
         <div className="lg:col-span-6 min-w-0">
-          {createdName && (
+          {error && (
+            <div
+              role="alert"
+              className="mb-5 bg-[#EFE3DF] border border-[#C9A69C] px-4 py-3 text-[13px] text-[#6B2D22]"
+            >
+              {error}
+            </div>
+          )}
+
+          {feedback && (
             <div className="mb-5 bg-[#F6F3EC] border border-[#1A1816]/35 px-4 py-3 flex items-center gap-2 text-[13px] text-[#1A1816]">
               <RiCheckLine size={16} aria-hidden="true" />
-              <span>Category “{createdName}” created.</span>
+              <span>{feedback}</span>
             </div>
           )}
 
@@ -64,6 +138,22 @@ const AddCategory = () => {
             onSubmit={handleSubmit}
             className="bg-[#F6F3EC] border border-[#EAE5DC] p-5 sm:p-7 space-y-5"
           >
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-serif text-[20px] font-normal text-[#1A1816]">
+                {editingSlug ? 'Edit Category' : 'Add New Category'}
+              </h2>
+              {editingSlug && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="inline-flex items-center gap-1 text-[10px] tracking-[0.16em] uppercase text-[#6D6860] hover:text-[#1A1816] cursor-pointer"
+                >
+                  <RiCloseLine size={14} aria-hidden="true" />
+                  <span>Cancel Edit</span>
+                </button>
+              )}
+            </div>
+
             <div>
               <label htmlFor="cat-title" className={labelClass}>
                 Category Title
@@ -130,6 +220,21 @@ const AddCategory = () => {
               />
             </div>
 
+            <AdminImageField
+              id="cat-image-file"
+              label="Category Editorial Image"
+              file={imageFile}
+              imageUrl={form.image}
+              onFileChange={(nextFile) => {
+                setImageFile(nextFile)
+                if (feedback) setFeedback('')
+              }}
+              onUrlChange={(val) =>
+                setForm((prev) => ({ ...prev, image: val }))
+              }
+              onError={setError}
+            />
+
             <label className="inline-flex items-center gap-2.5 text-[12.5px] text-[#4B463F] cursor-pointer">
               <input
                 type="checkbox"
@@ -145,9 +250,16 @@ const AddCategory = () => {
             <div>
               <button
                 type="submit"
-                className="px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+                disabled={submitting}
+                className="px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors disabled:opacity-60 cursor-pointer"
               >
-                CREATE CATEGORY
+                {submitting
+                  ? editingSlug
+                    ? 'SAVING...'
+                    : 'CREATING...'
+                  : editingSlug
+                    ? 'UPDATE CATEGORY'
+                    : 'CREATE CATEGORY'}
               </button>
             </div>
           </form>
@@ -167,26 +279,56 @@ const AddCategory = () => {
                 key={cat.id}
                 className="p-4 sm:px-5 flex items-start justify-between gap-4"
               >
-                <div className="min-w-0">
-                  <p className="text-[9.5px] tracking-[0.18em] uppercase text-[#8A8379]">
-                    {cat.indexLabel} · /{cat.slug}
-                  </p>
-                  <p className="font-serif text-[18px] text-[#1A1816]">
-                    {cat.title}
-                  </p>
-                  <p className="text-[12px] text-[#666058] mt-0.5">
-                    {cat.subtitle}
-                  </p>
+                <div className="flex items-start gap-3.5 min-w-0">
+                  {cat.image && (
+                    <img
+                      src={cat.image}
+                      alt={cat.title}
+                      className="w-12 h-14 object-cover border border-[#E5DFD3] shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <p className="text-[9.5px] tracking-[0.18em] uppercase text-[#8A8379]">
+                        {cat.indexLabel} · /{cat.slug}
+                      </p>
+                      <span className="text-[9.5px] tracking-[0.14em] uppercase px-2 py-0.5 bg-[#F3EFE6] text-[#5E5951]">
+                        {cat.itemCount ?? 0}{' '}
+                        {cat.itemCount === 1 ? 'Piece' : 'Pieces'}
+                      </span>
+                      {cat.featured && (
+                        <span className="text-[9.5px] tracking-[0.14em] uppercase px-2 py-0.5 bg-[#151413] text-[#FCF9F2]">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-serif text-[18px] text-[#1A1816]">
+                      {cat.title}
+                    </p>
+                    <p className="text-[12px] text-[#666058] mt-0.5">
+                      {cat.subtitle}
+                    </p>
+                  </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => deleteCategory(cat.id)}
-                  aria-label={`Delete ${cat.title}`}
-                  className="p-1.5 text-[#7A5448] hover:text-[#1A1816] transition-colors shrink-0 cursor-pointer"
-                >
-                  <RiDeleteBinLine size={16} aria-hidden="true" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(cat)}
+                    aria-label={`Edit ${cat.title}`}
+                    className="p-1.5 text-[#5E5951] hover:text-[#1A1816] transition-colors cursor-pointer"
+                  >
+                    <RiEditLine size={16} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(cat)}
+                    aria-label={`Delete ${cat.title}`}
+                    className="p-1.5 text-[#7A5448] hover:text-[#1A1816] transition-colors cursor-pointer"
+                  >
+                    <RiDeleteBinLine size={16} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -197,4 +339,3 @@ const AddCategory = () => {
 }
 
 export default AddCategory
-

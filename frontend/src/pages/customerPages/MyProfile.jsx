@@ -3,6 +3,7 @@ import { RiArrowRightLine, RiEditLine } from '@remixicon/react'
 import { ClerkProfileBanner } from '../../components/auth'
 import { ProfileLayout } from '../../components/profile'
 import { useStore } from '../../features/store/storeContext.js'
+import { formatINR } from '../../utils/currency.js'
 
 const MyProfile = () => {
   const { profile, addresses, orders, wishlistCount, cartCount } = useStore()
@@ -150,7 +151,7 @@ const MyProfile = () => {
                 Order {latestOrder.id} · {latestOrder.status}
               </p>
               <p className="text-[12.5px] text-[#666058]">
-                Placed {latestOrder.createdAt} · Total ${latestOrder.total}
+                Placed {latestOrder.createdAt} · Total {formatINR(latestOrder.total)}
               </p>
             </div>
 

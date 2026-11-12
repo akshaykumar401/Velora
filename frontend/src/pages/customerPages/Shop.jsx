@@ -1,16 +1,28 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useAppSelector } from '../../App/hooks.js'
 import { ShopFilterBar, ShopGrid, ShopHeader } from '../../components/shop'
-import { PRODUCTS, SHOP_FILTER_OPTIONS } from '../../data/catalogData.js'
+import { productMatchesCategory } from '../../utils/catalog.js'
+
+const ALL_CATEGORIES_OPTION = [{ label: 'All Pieces', value: 'all' }]
 
 const Shop = () => {
+  const { products, categories } = useAppSelector((state) => state.catalog)
   const [searchParams, setSearchParams] = useSearchParams()
   const initialCategory = searchParams.get('category') || 'all'
   const initialSearch = searchParams.get('search') || ''
 
   const [sortBy, setSortBy] = useState('featured')
 
-  const activeCategory = SHOP_FILTER_OPTIONS.some(
+  const filterOptions = useMemo(() => {
+    const baseValues = new Set(ALL_CATEGORIES_OPTION.map((opt) => opt.value))
+    const dynamicExtras = categories
+      .filter((cat) => !baseValues.has(cat.slug))
+      .map((cat) => ({ label: cat.title, value: cat.slug }))
+    return [...ALL_CATEGORIES_OPTION, ...dynamicExtras]
+  }, [categories])
+
+  const activeCategory = filterOptions.some(
     (opt) => opt.value === initialCategory,
   )
     ? initialCategory
@@ -41,14 +53,19 @@ const Shop = () => {
     setSearchParams({})
   }
 
+  const activeCategoryObj = useMemo(
+    () =>
+      categories.find((cat) => cat.slug === activeCategory) || activeCategory,
+    [categories, activeCategory],
+  )
+
   const filteredProducts = useMemo(() => {
     const normalizedQuery = initialSearch.trim().toLowerCase()
 
-    const matching = PRODUCTS.filter((product) => {
+    const matching = products.filter((product) => {
       const matchesCategory =
         activeCategory === 'all' ||
-        product.department === activeCategory ||
-        product.tags?.includes(activeCategory)
+        productMatchesCategory(product, activeCategoryObj)
 
       if (!matchesCategory) return false
 
@@ -66,10 +83,10 @@ const Shop = () => {
       if (sortBy === 'name-asc') return a.name.localeCompare(b.name)
       return (a.featuredOrder ?? 0) - (b.featuredOrder ?? 0)
     })
-  }, [activeCategory, initialSearch, sortBy])
+  }, [products, activeCategory, activeCategoryObj, initialSearch, sortBy])
 
   const activeCategoryLabel =
-    SHOP_FILTER_OPTIONS.find((opt) => opt.value === activeCategory)?.label ||
+    filterOptions.find((opt) => opt.value === activeCategory)?.label ||
     'All Pieces'
 
   return (
@@ -80,7 +97,7 @@ const Shop = () => {
         searchQuery={initialSearch.trim()}
       />
       <ShopFilterBar
-        categories={SHOP_FILTER_OPTIONS}
+        categories={filterOptions}
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
         searchQuery={initialSearch}

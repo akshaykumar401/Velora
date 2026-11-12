@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   RiCheckLine,
   RiDeleteBinLine,
@@ -12,8 +13,30 @@ import { useAdmin } from '../../features/admin/adminContext.js'
 const REVIEW_FILTERS = ['All', 'Published', 'Pending', 'Hidden']
 
 const ManageReviews = () => {
-  const { reviews, updateReviewStatus, deleteReview } = useAdmin()
+  const { reviews, refreshReviews, updateReviewStatus, deleteReview } =
+    useAdmin()
   const [filter, setFilter] = useState('All')
+  const [actionError, setActionError] = useState('')
+
+  useEffect(() => {
+    refreshReviews()
+  }, [refreshReviews])
+
+  const handleStatusChange = async (reviewId, status) => {
+    setActionError('')
+    const result = await updateReviewStatus(reviewId, status)
+    if (result?.meta?.requestStatus === 'rejected') {
+      setActionError(result.payload || 'Failed to update review status')
+    }
+  }
+
+  const handleDelete = async (reviewId) => {
+    setActionError('')
+    const result = await deleteReview(reviewId)
+    if (result?.meta?.requestStatus === 'rejected') {
+      setActionError(result.payload || 'Failed to delete review')
+    }
+  }
 
   const visibleReviews = useMemo(
     () =>
@@ -53,6 +76,15 @@ const ManageReviews = () => {
       </div>
 
       {/* Review List */}
+      {actionError && (
+        <div
+          role="alert"
+          className="mb-5 bg-[#EFE3DF] border border-[#C9A69C] px-4 py-3 text-[13px] text-[#6B2D22]"
+        >
+          {actionError}
+        </div>
+      )}
+
       <div className="space-y-4">
         {visibleReviews.length === 0 ? (
           <div className="border border-[#EAE5DC] bg-[#F6F3EC] p-10 text-center text-[13px] text-[#6D6860]">
@@ -86,22 +118,43 @@ const ManageReviews = () => {
                   </span>
                 </div>
 
-                <h2 className="font-serif text-[19px] text-[#1A1816] mb-1">
-                  {review.productName}
-                </h2>
-                <p className="text-[13px] leading-[1.7] text-[#5E5951] mb-2">
-                  “{review.comment}”
-                </p>
-                <p className="text-[11.5px] text-[#8A8379]">
-                  Submitted by {review.author}
-                </p>
+                <div className="flex items-start gap-3.5 min-w-0">
+                  {review.productImage && (
+                    <Link
+                      to={`/product/${review.productId}`}
+                      className="w-12 aspect-[4/4.8] bg-[#F2EDE4] overflow-hidden shrink-0 hidden sm:block"
+                    >
+                      <img
+                        src={review.productImage}
+                        alt={review.productName}
+                        className="w-full h-full object-cover"
+                      />
+                    </Link>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-serif text-[19px] text-[#1A1816] mb-1">
+                      <Link
+                        to={`/product/${review.productId}`}
+                        className="hover:underline underline-offset-4"
+                      >
+                        {review.productName}
+                      </Link>
+                    </h2>
+                    <p className="text-[13px] leading-[1.7] text-[#5E5951] mb-2">
+                      “{review.comment}”
+                    </p>
+                    <p className="text-[11.5px] text-[#8A8379]">
+                      Submitted by {review.author}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 {review.status !== 'Published' && (
                   <button
                     type="button"
-                    onClick={() => updateReviewStatus(review.id, 'Published')}
+                    onClick={() => handleStatusChange(review.id, 'Published')}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#151413] text-[#FCF9F2] text-[10.5px] tracking-[0.14em] uppercase hover:bg-[#2B2825] cursor-pointer"
                   >
                     <RiCheckLine size={13} aria-hidden="true" />
@@ -112,7 +165,7 @@ const ManageReviews = () => {
                 {review.status !== 'Hidden' && (
                   <button
                     type="button"
-                    onClick={() => updateReviewStatus(review.id, 'Hidden')}
+                    onClick={() => handleStatusChange(review.id, 'Hidden')}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-[#D8D1C5] text-[#1A1816] text-[10.5px] tracking-[0.14em] uppercase hover:border-[#1A1816] cursor-pointer"
                   >
                     <RiEyeOffLine size={13} aria-hidden="true" />
@@ -122,7 +175,7 @@ const ManageReviews = () => {
 
                 <button
                   type="button"
-                  onClick={() => deleteReview(review.id)}
+                  onClick={() => handleDelete(review.id)}
                   aria-label={`Delete review by ${review.author}`}
                   className="p-2 text-[#7A5448] hover:text-[#1A1816] cursor-pointer"
                 >

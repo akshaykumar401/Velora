@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { RiArrowRightLine } from '@remixicon/react'
-import { getProductById } from '../../data/catalogData.js'
+import { useAppSelector } from '../../App/hooks.js'
+import { formatINR } from '../../utils/currency.js'
 
 const OrderCard = ({ order }) => {
+  const catalogProducts = useAppSelector((state) => state.catalog.products)
   const totalCount = order.items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
@@ -23,14 +25,16 @@ const OrderCard = ({ order }) => {
             {order.status}
           </span>
           <span className="font-serif text-[19px] text-[#1A1816]">
-            ${order.total}
+            {formatINR(order.total)}
           </span>
         </div>
       </div>
 
       <div className="py-4 flex flex-wrap items-center gap-3">
         {order.items.map((item, idx) => {
-          const catalogMatch = getProductById(item.productId)
+          const catalogMatch = catalogProducts.find(
+            (p) => p.id === item.productId,
+          )
           return (
             <div
               key={`${item.productId}-${idx}`}
@@ -79,4 +83,3 @@ const OrderCard = ({ order }) => {
 }
 
 export default OrderCard
-

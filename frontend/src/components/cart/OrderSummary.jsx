@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { formatINR } from '../../utils/currency.js'
 
 const OrderSummary = ({ subtotal, itemCount }) => {
   return (
@@ -12,7 +13,9 @@ const OrderSummary = ({ subtotal, itemCount }) => {
           <span>
             Subtotal ({itemCount} {itemCount === 1 ? 'piece' : 'pieces'})
           </span>
-          <span className="text-[#1A1816] font-medium">${subtotal}</span>
+          <span className="text-[#1A1816] font-medium">
+            {formatINR(subtotal)}
+          </span>
         </div>
         <div className="flex items-center justify-between text-[#5E5951]">
           <span>Courier Shipping</span>
@@ -22,7 +25,7 @@ const OrderSummary = ({ subtotal, itemCount }) => {
 
       <div className="flex items-center justify-between py-5 text-[15px] font-medium text-[#1A1816]">
         <span>Estimated Total</span>
-        <span>${subtotal}</span>
+        <span>{formatINR(subtotal)}</span>
       </div>
 
       <Link

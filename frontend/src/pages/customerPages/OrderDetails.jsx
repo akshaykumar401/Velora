@@ -1,11 +1,14 @@
 import { Link, useParams } from 'react-router-dom'
 import { RiArrowLeftLine } from '@remixicon/react'
+import { useAppSelector } from '../../App/hooks.js'
 import { ProfileLayout } from '../../components/profile'
 import { useStore } from '../../features/store/storeContext.js'
-import { getProductById } from '../../data/catalogData.js'
+import { formatOrderPaymentLabel } from '../../utils/catalog.js'
+import { formatINR } from '../../utils/currency.js'
 
 const OrderDetails = () => {
   const { id } = useParams()
+  const catalogProducts = useAppSelector((state) => state.catalog.products)
   const { orders, getOrderById } = useStore()
   const order = id ? getOrderById(id) : orders[0]
 
@@ -60,7 +63,9 @@ const OrderDetails = () => {
 
           <div className="divide-y divide-[#EAE5DC]">
             {order.items.map((item, idx) => {
-              const catalogMatch = getProductById(item.productId)
+              const catalogMatch = catalogProducts.find(
+                (p) => p.id === item.productId,
+              )
               return (
                 <div
                   key={`${item.productId}-${idx}`}
@@ -102,7 +107,7 @@ const OrderDetails = () => {
                   </div>
 
                   <p className="text-[14px] font-medium text-[#1A1816] shrink-0">
-                    ${item.price * item.quantity}
+                    {formatINR(item.price * item.quantity)}
                   </p>
                 </div>
               )
@@ -142,8 +147,14 @@ const OrderDetails = () => {
                   Payment
                 </p>
                 <p className="text-[#1A1816]">
-                  Card ending in {order.paymentLast4 || '4242'}
+                  {formatOrderPaymentLabel(order)}
+                  {order.paymentStatus ? ` · ${order.paymentStatus}` : ''}
                 </p>
+                {order.paymentDetails?.razorpayPaymentId && (
+                  <p className="text-[11.5px] text-[#78736B] mt-0.5 break-all">
+                    Ref: {order.paymentDetails.razorpayPaymentId}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -155,20 +166,22 @@ const OrderDetails = () => {
             <div className="space-y-3 text-[13px] pb-4 border-b border-[#E5DFD3]">
               <div className="flex items-center justify-between text-[#5E5951]">
                 <span>Subtotal</span>
-                <span className="text-[#1A1816]">${order.subtotal}</span>
+                <span className="text-[#1A1816]">
+                  {formatINR(order.subtotal)}
+                </span>
               </div>
               <div className="flex items-center justify-between text-[#5E5951]">
                 <span>Shipping</span>
                 <span className="text-[#1A1816]">
                   {order.shippingFee === 0
                     ? 'Complimentary'
-                    : `$${order.shippingFee}`}
+                    : formatINR(order.shippingFee)}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between pt-4 text-[16px] font-medium text-[#1A1816]">
               <span>Total Paid</span>
-              <span>${order.total}</span>
+              <span>{formatINR(order.total)}</span>
             </div>
           </div>
         </div>

@@ -1,10 +1,24 @@
+import { formatINR } from '../../utils/currency.js'
+
+const STAGE_BUTTON_LABELS = {
+  creating: 'INITIALIZING RAZORPAY...',
+  checkout: 'AWAITING PAYMENT...',
+  verifying: 'VERIFYING PAYMENT...',
+}
+
 const CheckoutSummary = ({
   items = [],
   subtotal = 0,
   shippingFee = 0,
   formId = 'velora-checkout-form',
+  paymentStage = 'idle',
+  razorpayConfigured = null,
 }) => {
   const total = subtotal + shippingFee
+  const isBusy = paymentStage !== 'idle'
+  const isDisabled = isBusy || razorpayConfigured === false
+  const buttonLabel =
+    STAGE_BUTTON_LABELS[paymentStage] || `PAY ${formatINR(total)} WITH RAZORPAY`
 
   return (
     <aside className="bg-[#F6F3EC] p-6 sm:p-8 h-fit border border-[#EAE5DC]">
@@ -42,7 +56,7 @@ const CheckoutSummary = ({
             </div>
 
             <p className="text-[13px] font-medium text-[#1A1816] shrink-0">
-              ${item.product.price * item.quantity}
+              {formatINR(item.product.price * item.quantity)}
             </p>
           </div>
         ))}
@@ -51,27 +65,30 @@ const CheckoutSummary = ({
       <div className="space-y-3 text-[13px] py-5 border-b border-[#E5DFD3]">
         <div className="flex items-center justify-between text-[#5E5951]">
           <span>Subtotal</span>
-          <span className="text-[#1A1816] font-medium">${subtotal}</span>
+          <span className="text-[#1A1816] font-medium">
+            {formatINR(subtotal)}
+          </span>
         </div>
         <div className="flex items-center justify-between text-[#5E5951]">
           <span>Courier Shipping</span>
           <span className="text-[#1A1816]">
-            {shippingFee === 0 ? 'Complimentary' : `$${shippingFee}`}
+            {shippingFee === 0 ? 'Complimentary' : formatINR(shippingFee)}
           </span>
         </div>
       </div>
 
       <div className="flex items-center justify-between py-5 text-[16px] font-medium text-[#1A1816]">
         <span>Total</span>
-        <span>${total}</span>
+        <span>{formatINR(total)}</span>
       </div>
 
       <button
         type="submit"
         form={formId}
-        className="w-full px-6 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.22em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+        disabled={isDisabled}
+        className="w-full px-6 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.22em] uppercase hover:bg-[#2B2825] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
-        PLACE ORDER
+        {buttonLabel}
       </button>
     </aside>
   )

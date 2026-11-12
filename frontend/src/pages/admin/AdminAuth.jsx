@@ -7,7 +7,6 @@ import {
   RiShieldKeyholeLine,
 } from '@remixicon/react'
 import BrandLogo from '../../components/section/BrandLogo.jsx'
-import { ADMIN_DEMO_CREDENTIALS } from '../../data/adminData.js'
 import { useAdmin } from '../../features/admin/adminContext.js'
 
 const inputClass =
@@ -17,7 +16,7 @@ const labelClass =
   'block text-[10px] tracking-[0.18em] uppercase text-[#78736B] mb-1.5'
 
 const AdminAuth = () => {
-  const { isAuthenticated, loginAdmin } = useAdmin()
+  const { isAuthenticated, loading, loginAdmin } = useAdmin()
   const navigate = useNavigate()
   const location = useLocation()
   const redirectTo = location.state?.from || '/admin'
@@ -31,20 +30,14 @@ const AdminAuth = () => {
     return <Navigate to={redirectTo} replace />
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const res = loginAdmin({ email, passcode })
+    const res = await loginAdmin({ email, password: passcode, passcode })
     if (!res.ok) {
       setError(res.error)
       return
     }
     navigate(redirectTo, { replace: true })
-  }
-
-  const handleFillDemo = () => {
-    setEmail(ADMIN_DEMO_CREDENTIALS.email)
-    setPasscode(ADMIN_DEMO_CREDENTIALS.passcode)
-    setError('')
   }
 
   return (
@@ -102,14 +95,14 @@ const AdminAuth = () => {
                   setEmail(e.target.value)
                   if (error) setError('')
                 }}
-                placeholder="admin@velora.com"
+                placeholder="Enter admin email"
                 className={inputClass}
               />
             </div>
 
             <div>
               <label htmlFor="admin-passcode" className={labelClass}>
-                Admin Passcode
+                Admin Password
               </label>
               <div className="relative flex items-center">
                 <input
@@ -141,24 +134,14 @@ const AdminAuth = () => {
 
             <button
               type="submit"
-              className="w-full px-6 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.22em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+              disabled={loading}
+              className="w-full px-6 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.22em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer disabled:opacity-50"
             >
-              SIGN IN TO ADMIN
+              {loading ? 'SIGNING IN...' : 'SIGN IN TO ADMIN'}
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-[#E5DFD3] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11.5px] text-[#6D6860]">
-            <span>
-              Demo: <code className="text-[#1A1816]">{ADMIN_DEMO_CREDENTIALS.email}</code>
-            </span>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-left sm:text-right text-[10.5px] tracking-[0.14em] uppercase text-[#1A1816] underline underline-offset-4 hover:opacity-70 cursor-pointer"
-            >
-              Fill Demo Credentials
-            </button>
-          </div>
+
         </div>
       </div>
 

@@ -1,14 +1,27 @@
 import { useState } from 'react'
+import { catalogApi } from '../../services/catalogApi.js'
 
 const VeloraCircleSection = () => {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!email.trim()) return
-    setSubscribed(true)
-    setEmail('')
+    if (!email.trim() || submitting) return
+    setSubmitting(true)
+    setError('')
+    setSubscribed(false)
+    try {
+      await catalogApi.subscribeNewsletter(email.trim(), 'velora-circle')
+      setSubscribed(true)
+      setEmail('')
+    } catch (err) {
+      setError(err?.message || 'Unable to subscribe right now.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -48,6 +61,7 @@ const VeloraCircleSection = () => {
                 onChange={(e) => {
                   setEmail(e.target.value)
                   if (subscribed) setSubscribed(false)
+                  if (error) setError('')
                 }}
                 placeholder="Enter your email address"
                 aria-label="Email address for private access"
@@ -55,11 +69,18 @@ const VeloraCircleSection = () => {
               />
               <button
                 type="submit"
-                className="px-7 py-3 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors shrink-0 cursor-pointer"
+                disabled={submitting}
+                className="px-7 py-3 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] disabled:opacity-60 transition-colors shrink-0 cursor-pointer"
               >
-                SUBSCRIBE
+                {submitting ? 'JOINING...' : 'SUBSCRIBE'}
               </button>
             </form>
+
+            {error && (
+              <p role="alert" className="text-[12px] text-[#8E2A20] mt-3.5">
+                {error}
+              </p>
+            )}
 
             {subscribed && (
               <p className="text-[12px] text-[#4E4942] mt-3.5">

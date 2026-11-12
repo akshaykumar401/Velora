@@ -13,18 +13,38 @@ const labelClass =
 const AdminProfile = () => {
   const { adminProfile, updateAdminProfile, logoutAdmin } = useAdmin()
   const navigate = useNavigate()
-  const [form, setForm] = useState(adminProfile)
+  const [draft, setDraft] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const form = draft ?? adminProfile
 
   const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    setDraft((prev) => ({ ...(prev ?? adminProfile), [field]: value }))
     if (saved) setSaved(false)
+    if (error) setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    updateAdminProfile(form)
-    setSaved(true)
+    setSaving(true)
+    setSaved(false)
+    setError('')
+    try {
+      await updateAdminProfile({
+        name: form.name,
+        role: form.role,
+        email: form.email,
+        studio: form.studio,
+        phone: form.phone,
+      })
+      setDraft(null)
+      setSaved(true)
+    } catch (err) {
+      setError(err?.message || 'Failed to update administrator profile')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleSignOut = () => {
@@ -51,11 +71,22 @@ const AdminProfile = () => {
       />
 
       <div className="max-w-[660px] space-y-6">
+        {error && (
+          <div
+            role="alert"
+            className="bg-[#EFE3DF] border border-[#C9A69C] px-4 py-3 text-[13px] text-[#6B2D22]"
+          >
+            {error}
+          </div>
+        )}
+
         <div className="bg-[#F6F3EC] border border-[#EAE5DC] p-5 flex items-center gap-3 text-[12.5px] text-[#5E5951]">
           <RiShieldCheckLine size={17} className="text-[#1A1816] shrink-0" aria-hidden="true" />
           <span>
             Authenticated session active for{' '}
-            <strong className="text-[#1A1816]">{adminProfile.email}</strong>
+            <strong className="text-[#1A1816]">
+              {adminProfile.authEmail || adminProfile.email}
+            </strong>
           </span>
         </div>
 
@@ -135,9 +166,12 @@ const AdminProfile = () => {
 
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors disabled:opacity-60 cursor-pointer"
           >
-            {saved ? (
+            {saving ? (
+              <span>SAVING...</span>
+            ) : saved ? (
               <>
                 <RiCheckLine size={15} aria-hidden="true" />
                 <span>PROFILE SAVED</span>

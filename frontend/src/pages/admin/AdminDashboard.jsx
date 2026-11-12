@@ -4,12 +4,14 @@ import {
   RiArrowRightLine,
   RiFileList3Line,
   RiFolderAddLine,
+  RiImageEditLine,
   RiPriceTag3Line,
   RiShoppingBag3Line,
   RiStarLine,
 } from '@remixicon/react'
 import { AdminPageHeader, AdminStatCard } from '../../components/admin'
 import { useAdmin } from '../../features/admin/adminContext.js'
+import { formatINR } from '../../utils/currency.js'
 
 const AdminDashboard = () => {
   const { products, categories, orders, reviews } = useAdmin()
@@ -47,7 +49,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-10">
         <AdminStatCard
           label="Total Revenue"
-          value={`$${totalRevenue.toLocaleString()}`}
+          value={formatINR(totalRevenue)}
           hint={`${orders.length} orders recorded`}
           Icon={RiShoppingBag3Line}
         />
@@ -109,8 +111,8 @@ const AdminDashboard = () => {
                   <span className="px-2.5 py-1 bg-[#F3EFE6] text-[10px] tracking-[0.14em] uppercase text-[#1A1816]">
                     {order.status}
                   </span>
-                  <span className="text-[13.5px] font-medium text-[#1A1816] min-w-[60px] text-right">
-                    ${order.total}
+                  <span className="text-[13.5px] font-medium text-[#1A1816] min-w-[72px] text-right">
+                    {formatINR(order.total)}
                   </span>
                 </div>
               </div>
@@ -153,6 +155,17 @@ const AdminDashboard = () => {
                 <span className="inline-flex items-center gap-2.5">
                   <RiStarLine size={15} aria-hidden="true" />
                   <span>Moderate Client Reviews</span>
+                </span>
+                <RiArrowRightLine size={14} aria-hidden="true" />
+              </Link>
+
+              <Link
+                to="/admin/storefront"
+                className="flex items-center justify-between px-4 py-3 bg-[#FCF9F2] border border-[#E5DFD3] hover:border-[#1A1816] text-[12px] text-[#1A1816] transition-colors"
+              >
+                <span className="inline-flex items-center gap-2.5">
+                  <RiImageEditLine size={15} aria-hidden="true" />
+                  <span>Customize Hero Image</span>
                 </span>
                 <RiArrowRightLine size={14} aria-hidden="true" />
               </Link>

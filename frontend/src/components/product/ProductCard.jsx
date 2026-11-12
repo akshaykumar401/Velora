@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { RiHeartFill, RiHeartLine } from '@remixicon/react'
+import { RiHeartFill, RiHeartLine, RiStarFill } from '@remixicon/react'
 import { useAuthStatus } from '../../features/auth/authContext.js'
 import { useStore } from '../../features/store/storeContext.js'
+import { formatINR } from '../../utils/currency.js'
 
 const ProductCard = ({ product }) => {
   const { isSignedIn } = useAuthStatus()
@@ -50,6 +51,12 @@ const ProductCard = ({ product }) => {
           )}
         </Link>
 
+        {product.stock === 0 && (
+          <span className="absolute top-3 left-3 px-2.5 py-1 bg-[#1A1816] text-[#FCF9F2] text-[9px] tracking-[0.18em] uppercase">
+            Sold Out
+          </span>
+        )}
+
         <button
           type="button"
           onClick={handleWishlistClick}
@@ -83,9 +90,18 @@ const ProductCard = ({ product }) => {
         <h3 className="font-serif text-[16px] text-[#1A1816] leading-snug mb-1 group-hover:underline underline-offset-4 decoration-[#C8C1B5]">
           {product.name}
         </h3>
-        <p className="text-[12.5px] font-medium text-[#1A1816]">
-          ${product.price}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[12.5px] font-medium text-[#1A1816]">
+            {formatINR(product.price)}
+          </p>
+          {product.reviewCount > 0 && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-[#6D6860]">
+              <RiStarFill size={12} className="text-[#1A1816]" aria-hidden="true" />
+              <span>{product.averageRating}</span>
+              <span>({product.reviewCount})</span>
+            </span>
+          )}
+        </div>
       </Link>
     </article>
   )

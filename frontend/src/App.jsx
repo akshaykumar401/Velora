@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { Navbar, Footer } from './components'
+import Navbar from './components/section/Navbar.jsx'
+import Footer from './components/section/Footer.jsx'
 
 const App = () => {
   const { pathname } = useLocation()

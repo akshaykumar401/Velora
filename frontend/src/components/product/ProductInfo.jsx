@@ -6,10 +6,12 @@ import {
   RiHeartFill,
   RiHeartLine,
   RiLockLine,
+  RiStarFill,
   RiSubtractLine,
 } from '@remixicon/react'
 import { useAuthStatus } from '../../features/auth/authContext.js'
 import { useStore } from '../../features/store/storeContext.js'
+import { formatINR } from '../../utils/currency.js'
 
 const ACCORDION_ITEMS = [
   { key: 'fabric', title: 'Material & Provenance' },
@@ -38,6 +40,10 @@ const ProductInfo = ({ product }) => {
   const [openSection, setOpenSection] = useState('fabric')
 
   const wishlisted = isSignedIn && isWishlisted(product.id)
+  const availableStock =
+    typeof product.stock === 'number' ? product.stock : 25
+  const isOutOfStock = availableStock <= 0
+  const effectiveQuantity = isOutOfStock ? 1 : Math.min(quantity, availableStock)
 
   const redirectToSignIn = () => {
     navigate('/sign-in', {
@@ -46,6 +52,7 @@ const ProductInfo = ({ product }) => {
   }
 
   const handleAddToBag = () => {
+    if (isOutOfStock) return
     if (!isSignedIn) {
       redirectToSignIn()
       return
@@ -54,7 +61,7 @@ const ProductInfo = ({ product }) => {
       productId: product.id,
       size: selectedSize,
       color: selectedColor,
-      quantity,
+      quantity: effectiveQuantity,
     })
     setAddedFeedback(true)
     window.setTimeout(() => setAddedFeedback(false), 1800)
@@ -78,9 +85,35 @@ const ProductInfo = ({ product }) => {
         {product.name}
       </h1>
 
-      <p className="text-[18px] font-medium text-[#1A1816] mb-6">
-        ${product.price}
-      </p>
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <p className="text-[18px] font-medium text-[#1A1816]">
+          {formatINR(product.price)}
+        </p>
+        <span
+          className={`text-[10.5px] tracking-[0.16em] uppercase px-2.5 py-1 ${
+            isOutOfStock
+              ? 'bg-[#EFE3DF] text-[#7A3528]'
+              : availableStock <= 5
+                ? 'bg-[#F3ECE0] text-[#8C5B2E]'
+                : 'bg-[#F3EFE6] text-[#5E5951]'
+          }`}
+        >
+          {isOutOfStock
+            ? 'Out of Stock'
+            : availableStock <= 5
+              ? `Only ${availableStock} left`
+              : `${availableStock} in stock`}
+        </span>
+        {product.reviewCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-[11.5px] text-[#5E5951]">
+            <RiStarFill size={13} className="text-[#1A1816]" aria-hidden="true" />
+            <span>
+              {product.averageRating} ({product.reviewCount}{' '}
+              {product.reviewCount === 1 ? 'review' : 'reviews'})
+            </span>
+          </span>
+        )}
+      </div>
 
       <p className="text-[13.5px] leading-[1.75] text-[#5E5951] mb-8">
         {product.description}
@@ -156,20 +189,24 @@ const ProductInfo = ({ product }) => {
           <div className="flex items-center justify-between border border-[#D8D1C5] px-3 py-2.5 sm:w-28">
             <button
               type="button"
+              disabled={isOutOfStock || effectiveQuantity <= 1}
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               aria-label="Decrease quantity"
-              className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+              className="text-[#5E5951] hover:text-[#1A1816] disabled:opacity-40 cursor-pointer"
             >
               <RiSubtractLine size={15} aria-hidden="true" />
             </button>
             <span className="text-[13px] font-medium text-[#1A1816]">
-              {quantity}
+              {isOutOfStock ? 0 : effectiveQuantity}
             </span>
             <button
               type="button"
-              onClick={() => setQuantity((q) => q + 1)}
+              disabled={isOutOfStock || effectiveQuantity >= availableStock}
+              onClick={() =>
+                setQuantity((q) => Math.min(availableStock, q + 1))
+              }
               aria-label="Increase quantity"
-              className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+              className="text-[#5E5951] hover:text-[#1A1816] disabled:opacity-40 cursor-pointer"
             >
               <RiAddLine size={15} aria-hidden="true" />
             </button>
@@ -177,10 +214,13 @@ const ProductInfo = ({ product }) => {
 
           <button
             type="button"
+            disabled={isOutOfStock}
             onClick={handleAddToBag}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[11px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[11px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors disabled:opacity-50 cursor-pointer"
           >
-            {addedFeedback ? (
+            {isOutOfStock ? (
+              <span>OUT OF STOCK</span>
+            ) : addedFeedback ? (
               <>
                 <RiCheckLine size={15} aria-hidden="true" />
                 <span>ADDED TO BAG</span>

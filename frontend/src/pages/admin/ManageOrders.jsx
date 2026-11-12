@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RiArrowRightLine, RiSearchLine } from '@remixicon/react'
 import { AdminPageHeader } from '../../components/admin'
-import { ORDER_STATUS_OPTIONS } from '../../data/adminData.js'
 import { useAdmin } from '../../features/admin/adminContext.js'
+import { ORDER_STATUS_OPTIONS } from '../../utils/catalog.js'
+import { formatINR } from '../../utils/currency.js'
 
 const STATUS_TABS = ['All', ...ORDER_STATUS_OPTIONS]
 
@@ -128,8 +129,8 @@ const ManageOrders = () => {
                     ))}
                   </select>
 
-                  <span className="text-[14px] font-medium text-[#1A1816] min-w-[60px] text-right">
-                    ${order.total}
+                  <span className="text-[14px] font-medium text-[#1A1816] min-w-[72px] text-right">
+                    {formatINR(order.total)}
                   </span>
 
                   <Link

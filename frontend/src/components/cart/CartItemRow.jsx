@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { RiAddLine, RiCloseLine, RiSubtractLine } from '@remixicon/react'
+import { formatINR } from '../../utils/currency.js'
 
 const CartItemRow = ({ item, onUpdateQuantity, onRemove }) => {
   const { key, product, size, color, quantity } = item
   const productHref = `/product/${product.id}`
+  const maxStock = typeof product.stock === 'number' ? product.stock : Infinity
 
   return (
     <div className="py-6 border-b border-[#EAE5DC] flex gap-5 sm:gap-6">
@@ -75,16 +77,17 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }) => {
             </span>
             <button
               type="button"
+              disabled={quantity >= maxStock}
               onClick={() => onUpdateQuantity(key, quantity + 1)}
               aria-label={`Increase quantity for ${product.name}`}
-              className="text-[#5E5951] hover:text-[#1A1816] cursor-pointer"
+              className="text-[#5E5951] hover:text-[#1A1816] disabled:opacity-35 cursor-pointer"
             >
               <RiAddLine size={14} aria-hidden="true" />
             </button>
           </div>
 
           <p className="text-[13.5px] font-medium text-[#1A1816]">
-            ${product.price * quantity}
+            {formatINR(product.price * quantity)}
           </p>
         </div>
       </div>

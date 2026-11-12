@@ -2,14 +2,17 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   RiAddCircleLine,
+  RiAddLine,
   RiCheckLine,
   RiCloseLine,
   RiDeleteBinLine,
   RiEditLine,
   RiSearchLine,
+  RiSubtractLine,
 } from '@remixicon/react'
 import { AdminPageHeader } from '../../components/admin'
 import { useAdmin } from '../../features/admin/adminContext.js'
+import { formatINR } from '../../utils/currency.js'
 
 const ManageProducts = () => {
   const { products, categories, updateProduct, deleteProduct } = useAdmin()
@@ -18,6 +21,9 @@ const ManageProducts = () => {
   const [editingId, setEditingId] = useState(null)
   const [draftName, setDraftName] = useState('')
   const [draftPrice, setDraftPrice] = useState('')
+  const [draftStock, setDraftStock] = useState('')
+  const [savingId, setSavingId] = useState('')
+  const [error, setError] = useState('')
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -33,18 +39,46 @@ const ManageProducts = () => {
     })
   }, [products, search, departmentFilter])
 
+  const applyProductUpdate = async (id, patch) => {
+    setError('')
+    setSavingId(id)
+    try {
+      const result = await updateProduct(id, patch)
+      if (result?.meta?.requestStatus === 'rejected') {
+        setError(result.payload || 'Failed to update product')
+        return false
+      }
+      return true
+    } finally {
+      setSavingId('')
+    }
+  }
+
   const startEdit = (product) => {
+    setError('')
     setEditingId(product.id)
     setDraftName(product.name)
     setDraftPrice(String(product.price))
+    setDraftStock(String(product.stock ?? 0))
   }
 
-  const saveEdit = (id) => {
-    updateProduct(id, {
+  const saveEdit = async (id) => {
+    const parsedStock = Math.max(0, Math.floor(Number(draftStock) || 0))
+    const ok = await applyProductUpdate(id, {
       name: draftName.trim() || 'Untitled Piece',
-      price: Number(draftPrice) || 0,
+      price: Math.max(0, Number(draftPrice) || 0),
+      stock: parsedStock,
     })
-    setEditingId(null)
+    if (ok) {
+      setEditingId(null)
+    }
+  }
+
+  const handleStepStock = (product, delta) => {
+    const current = Number(product.stock ?? 0)
+    const nextStock = Math.max(0, current + delta)
+    if (nextStock === current) return
+    applyProductUpdate(product.id, { stock: nextStock })
   }
 
   return (
@@ -97,6 +131,15 @@ const ManageProducts = () => {
         </select>
       </div>
 
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 bg-[#EFE3DF] border border-[#C9A69C] px-4 py-3 text-[13px] text-[#6B2D22]"
+        >
+          {error}
+        </div>
+      )}
+
       {/* Product Rows */}
       <div className="border border-[#E5DFD3] bg-[#FCF9F2] divide-y divide-[#EAE5DC]">
         {filteredProducts.length === 0 ? (
@@ -106,10 +149,12 @@ const ManageProducts = () => {
         ) : (
           filteredProducts.map((product) => {
             const isEditing = editingId === product.id
+            const stockCount = Number(product.stock ?? 0)
+            const isBusy = savingId === product.id
             return (
               <div
                 key={product.id}
-                className="p-4 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 sm:px-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div className="w-12 aspect-[4/4.8] bg-[#F2EDE4] overflow-hidden shrink-0">
@@ -142,27 +187,99 @@ const ManageProducts = () => {
                         className="mt-1 w-full max-w-[320px] bg-[#F6F3EC] border border-[#1A1816] px-2.5 py-1 text-[13px] text-[#1A1816] focus:outline-none"
                       />
                     ) : (
-                      <p className="font-serif text-[17px] text-[#1A1816] truncate">
-                        {product.name}
-                      </p>
+                      <>
+                        <p className="font-serif text-[17px] text-[#1A1816] truncate">
+                          {product.name}
+                        </p>
+                        <p
+                          className={`text-[11px] mt-0.5 ${
+                            stockCount === 0
+                              ? 'text-[#7A3528] font-medium'
+                              : stockCount <= 5
+                                ? 'text-[#8C5B2E]'
+                                : 'text-[#6D6860]'
+                          }`}
+                        >
+                          {stockCount === 0
+                            ? 'Out of stock'
+                            : `${stockCount} in stock`}
+                        </p>
+                      </>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 sm:gap-4 shrink-0">
                   {isEditing ? (
-                    <input
-                      type="number"
-                      min="1"
-                      value={draftPrice}
-                      onChange={(e) => setDraftPrice(e.target.value)}
-                      aria-label="Product price"
-                      className="w-24 bg-[#F6F3EC] border border-[#1A1816] px-2.5 py-1 text-[13px] text-[#1A1816] focus:outline-none"
-                    />
+                    <div className="flex flex-wrap items-end gap-2.5">
+                      <div>
+                        <label
+                          htmlFor={`edit-price-${product.id}`}
+                          className="block text-[9px] tracking-[0.16em] uppercase text-[#78736B] mb-1"
+                        >
+                          Price (INR ₹)
+                        </label>
+                        <input
+                          id={`edit-price-${product.id}`}
+                          type="number"
+                          min="0"
+                          value={draftPrice}
+                          onChange={(e) => setDraftPrice(e.target.value)}
+                          className="w-24 bg-[#F6F3EC] border border-[#1A1816] px-2.5 py-1 text-[13px] text-[#1A1816] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor={`edit-stock-${product.id}`}
+                          className="block text-[9px] tracking-[0.16em] uppercase text-[#78736B] mb-1"
+                        >
+                          Total Stock
+                        </label>
+                        <input
+                          id={`edit-stock-${product.id}`}
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={draftStock}
+                          onChange={(e) => setDraftStock(e.target.value)}
+                          className="w-20 bg-[#F6F3EC] border border-[#1A1816] px-2.5 py-1 text-[13px] text-[#1A1816] focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    <span className="text-[14px] font-medium text-[#1A1816]">
-                      ${product.price}
-                    </span>
+                    <>
+                      <div
+                        className="inline-flex items-center border border-[#D8D1C5] bg-[#F6F3EC]"
+                        aria-label={`Adjust stock for ${product.name}`}
+                      >
+                        <button
+                          type="button"
+                          disabled={isBusy || stockCount <= 0}
+                          onClick={() => handleStepStock(product, -1)}
+                          aria-label={`Decrease stock for ${product.name}`}
+                          className="px-2 py-1 text-[#5E5951] hover:text-[#1A1816] disabled:opacity-35 cursor-pointer"
+                        >
+                          <RiSubtractLine size={13} aria-hidden="true" />
+                        </button>
+                        <span className="px-2 text-[11.5px] font-medium text-[#1A1816] min-w-[34px] text-center">
+                          {stockCount}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={isBusy}
+                          onClick={() => handleStepStock(product, 1)}
+                          aria-label={`Increase stock for ${product.name}`}
+                          className="px-2 py-1 text-[#5E5951] hover:text-[#1A1816] disabled:opacity-35 cursor-pointer"
+                        >
+                          <RiAddLine size={13} aria-hidden="true" />
+                        </button>
+                      </div>
+
+                      <span className="text-[14px] font-medium text-[#1A1816] min-w-[72px] text-right">
+                        {formatINR(product.price)}
+                      </span>
+                    </>
                   )}
 
                   <div className="flex items-center gap-1.5">
@@ -170,14 +287,16 @@ const ManageProducts = () => {
                       <>
                         <button
                           type="button"
+                          disabled={isBusy}
                           onClick={() => saveEdit(product.id)}
                           aria-label="Save changes"
-                          className="p-2 bg-[#151413] text-[#FCF9F2] cursor-pointer"
+                          className="p-2 bg-[#151413] text-[#FCF9F2] disabled:opacity-50 cursor-pointer"
                         >
                           <RiCheckLine size={15} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
+                          disabled={isBusy}
                           onClick={() => setEditingId(null)}
                           aria-label="Cancel edit"
                           className="p-2 border border-[#CFC9BE] text-[#1A1816] cursor-pointer"

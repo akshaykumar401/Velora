@@ -1,4 +1,11 @@
 import { RiBankCardLine, RiShieldCheckLine, RiTruckLine } from '@remixicon/react'
+import {
+  EXPRESS_SHIPPING_FEE_INR,
+  EXPRESS_SHIPPING_THRESHOLD_INR,
+  formatINR,
+} from '../../utils/currency.js'
+
+const PAYMENT_METHODS = ['UPI', 'Cards', 'NetBanking', 'Wallets']
 
 const DELIVERY_OPTIONS = [
   {
@@ -11,7 +18,7 @@ const DELIVERY_OPTIONS = [
     id: 'express',
     label: 'Express Priority Air',
     eta: '1–2 Business Days',
-    fee: 25,
+    fee: EXPRESS_SHIPPING_FEE_INR,
   },
 ]
 
@@ -29,6 +36,7 @@ const CheckoutForm = ({
   selectedDelivery,
   onDeliveryChange,
   subtotal,
+  razorpayConfigured = null,
   onSubmit,
 }) => {
   return (
@@ -110,7 +118,7 @@ const CheckoutForm = ({
               required
               value={formData.phone}
               onChange={(e) => onFieldChange('phone', e.target.value)}
-              placeholder="+1 (212) 555-0184"
+              placeholder="+91 98765 43210"
               className={inputClass}
             />
           </div>
@@ -204,7 +212,9 @@ const CheckoutForm = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {DELIVERY_OPTIONS.map((option) => {
             const effectiveFee =
-              option.id === 'express' && subtotal >= 400 ? 0 : option.fee
+              option.id === 'express' && subtotal >= EXPRESS_SHIPPING_THRESHOLD_INR
+                ? 0
+                : option.fee
             const active = selectedDelivery === option.id
             return (
               <button
@@ -223,7 +233,7 @@ const CheckoutForm = ({
                     {option.label}
                   </span>
                   <span className="text-[12px] font-medium text-[#1A1816] shrink-0">
-                    {effectiveFee === 0 ? 'Complimentary' : `$${effectiveFee}`}
+                    {effectiveFee === 0 ? 'Complimentary' : formatINR(effectiveFee)}
                   </span>
                 </div>
                 <p className="text-[11.5px] text-[#6D6860]">{option.eta}</p>
@@ -233,7 +243,7 @@ const CheckoutForm = ({
         </div>
       </div>
 
-      {/* Payment Details */}
+      {/* Razorpay Payment */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <RiBankCardLine size={17} className="text-[#1A1816]" aria-hidden="true" />
@@ -242,72 +252,42 @@ const CheckoutForm = ({
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F6F3EC] p-5 border border-[#EAE5DC]">
-          <div className="sm:col-span-2">
-            <label htmlFor="checkout-card-name" className={labelClass}>
-              Name on Card
-            </label>
-            <input
-              id="checkout-card-name"
-              type="text"
-              required
-              value={formData.cardName}
-              onChange={(e) => onFieldChange('cardName', e.target.value)}
-              placeholder="Cardholder name"
-              className={inputClass}
-            />
+        <div className="bg-[#F6F3EC] p-5 sm:p-6 border border-[#EAE5DC] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-[13.5px] font-medium text-[#1A1816]">
+                Razorpay Secure Checkout
+              </p>
+              <p className="text-[12px] text-[#6D6860] mt-0.5">
+                Complete your purchase securely in INR via encrypted Razorpay Checkout.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 shrink-0">
+              {PAYMENT_METHODS.map((method) => (
+                <span
+                  key={method}
+                  className="px-2.5 py-1 bg-[#FCF9F2] border border-[#D8D1C5] text-[10px] tracking-[0.14em] uppercase text-[#4B463F]"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="sm:col-span-2">
-            <label htmlFor="checkout-card-number" className={labelClass}>
-              Card Number
-            </label>
-            <input
-              id="checkout-card-number"
-              type="text"
-              inputMode="numeric"
-              required
-              value={formData.cardNumber}
-              onChange={(e) => onFieldChange('cardNumber', e.target.value)}
-              placeholder="4242 4242 4242 4242"
-              className={inputClass}
-            />
-          </div>
+          {razorpayConfigured === false && (
+            <div className="px-3.5 py-2.5 bg-[#EFE3DF] border border-[#C9A69C] text-[12px] text-[#6B2D22]">
+              Razorpay keys are not configured yet. Add{' '}
+              <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code>{' '}
+              to <code>backend/.env</code> to enable checkout payments.
+            </div>
+          )}
 
-          <div>
-            <label htmlFor="checkout-card-expiry" className={labelClass}>
-              Expiration (MM/YY)
-            </label>
-            <input
-              id="checkout-card-expiry"
-              type="text"
-              required
-              value={formData.cardExpiry}
-              onChange={(e) => onFieldChange('cardExpiry', e.target.value)}
-              placeholder="09/28"
-              className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="checkout-card-cvc" className={labelClass}>
-              Security Code
-            </label>
-            <input
-              id="checkout-card-cvc"
-              type="text"
-              inputMode="numeric"
-              required
-              value={formData.cardCvc}
-              onChange={(e) => onFieldChange('cardCvc', e.target.value)}
-              placeholder="123"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="sm:col-span-2 flex items-center gap-2 text-[11.5px] text-[#6D6860] pt-1">
+          <div className="flex items-center gap-2 text-[11.5px] text-[#6D6860] pt-1 border-t border-[#E5DFD3]">
             <RiShieldCheckLine size={15} className="shrink-0" aria-hidden="true" />
-            <span>Encrypted client-side checkout preview.</span>
+            <span>
+              256-bit SSL encrypted gateway with server-side signature verification. No card details are stored on Velora servers.
+            </span>
           </div>
         </div>
       </div>

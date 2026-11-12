@@ -1,46 +1,3 @@
-import categoryAccessoriesImg from '../assets/images/category-accessories.jpg'
-import productKnitwearImg from '../assets/images/product-knitwear.jpg'
-import { PRODUCTS } from './catalogData.js'
-
-export const COLLECTIONS = [
-  {
-    id: 'autumn-winter-26',
-    season: 'CAPSULE 01 · AUTUMN / WINTER',
-    title: 'Architectural Warmth',
-    description:
-      'Sculpted double-faced coats, lofty fisherman-rib merino, and understated earth tones built for crisp northern mornings.',
-    ctaTo: '/shop?category=women',
-    coverImage: productKnitwearImg,
-    productIds: ['camel-belted-coat', 'merino-pullover', 'ribbed-cashmere-scarf'],
-  },
-  {
-    id: 'monochrome-tailoring',
-    season: 'CAPSULE 02 · ATELIER TAILORING',
-    title: 'Monochrome Form',
-    description:
-      'High-twist virgin wool suiting, architectural pleat trousers, and crisp two-fold poplin engineered for effortless proportion.',
-    ctaTo: '/shop?category=men',
-    coverImage: null,
-    placeholderBg: 'bg-gradient-to-br from-[#8F8E8A] via-[#515354] to-[#232527]',
-    productIds: ['pleat-trousers', 'charcoal-wool-blazer', 'poplin-atelier-shirt'],
-  },
-  {
-    id: 'leather-atelier',
-    season: 'CAPSULE 03 · PERMANENT ESSENTIALS',
-    title: 'Objects of Permanence',
-    description:
-      'Vegetable-tanned Italian calfskin bags and pure 22-momme mulberry silk staples designed to acquire patina across decades.',
-    ctaTo: '/shop?category=accessories',
-    coverImage: categoryAccessoriesImg,
-    productIds: ['structured-tote', 'mulberry-silk-shirt', 'grained-weekender-bag'],
-  },
-].map((collection) => ({
-  ...collection,
-  products: collection.productIds
-    .map((id) => PRODUCTS.find((p) => p.id === id))
-    .filter(Boolean),
-}))
-
 export const SUSTAINABILITY_PILLARS = [
   {
     index: '01 / PROVENANCE',
@@ -79,7 +36,7 @@ export const SHIPPING_METHODS = [
   {
     title: 'Express Priority Air',
     timing: '1–2 Business Days',
-    cost: 'Complimentary over $400 · $25 under',
+    cost: 'Complimentary over ₹4,000 · ₹250 under',
     notes: 'Signature required on arrival with full transit insurance.',
   },
   {
@@ -164,3 +121,42 @@ export const FAQ_ITEMS = [
   },
 ]
 
+export const ATELIER_MATERIALS = [
+  {
+    index: '01',
+    title: 'Mongolian Cashmere',
+    description:
+      'Long-staple combed fibers spun in family-run Italian mills for warmth and featherlight drape.',
+  },
+  {
+    index: '02',
+    title: 'Mulberry Silk',
+    description:
+      '22-momme organic silk twill finished with a matte lustre that softens effortlessly with wear.',
+  },
+  {
+    index: '03',
+    title: 'Full-Grain Calfskin',
+    description:
+      'Vegetable-tanned hides selected for architectural structure and subtle patina over decades.',
+  },
+  {
+    index: '04',
+    title: 'Virgin Merino Wool',
+    description:
+      'Traceable high-twist worsted wool tailored to hold crisp lines from morning into evening.',
+  },
+]
+
+export const HERO_DATA = {
+  image:
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUMUa5RHPmKuYPEqsEcnjJca9m2MyrTHCW9HwaycrRZA&s=10',
+  eyebrow: 'DISCOVER THE AUTUMN / WINTER COLLECTION',
+  title: 'Timeless Elegance, Modern Craft',
+  subtitle:
+    'Immaculate tailoring, noble materials, and effortless silhouettes designed for the discerning wardrobe.',
+}
+
+export const PHILOSOPHY_DATA = {
+  image: null,
+}

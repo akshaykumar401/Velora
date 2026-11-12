@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { RiCheckLine, RiMailLine, RiMapPinLine, RiTimeLine } from '@remixicon/react'
+import { catalogApi } from '../../services/catalogApi.js'
 
 const inputClass =
   'w-full min-w-0 bg-[#FCF9F2] border border-[#D8D1C5] px-3.5 py-2.5 text-[13px] text-[#1A1816] placeholder:text-[#969087] focus:border-[#1A1816] focus:outline-none transition-colors'
@@ -14,17 +15,33 @@ const ContactFormSection = () => {
     topic: 'Sizing & Garment Consultation',
     message: '',
   })
+  const [sending, setSending] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitted(true)
-    setForm({
-      name: '',
-      email: '',
-      topic: 'Sizing & Garment Consultation',
-      message: '',
-    })
+    if (sending) return
+
+    setSending(true)
+    setSubmitError('')
+    setSubmitted(false)
+    try {
+      await catalogApi.submitContactInquiry(form)
+      setSubmitted(true)
+      setForm({
+        name: '',
+        email: '',
+        topic: 'Sizing & Garment Consultation',
+        message: '',
+      })
+    } catch (err) {
+      setSubmitError(
+        err?.message || 'Unable to send inquiry right now. Please try again.',
+      )
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -157,9 +174,12 @@ const ContactFormSection = () => {
 
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] transition-colors cursor-pointer"
+                disabled={sending}
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#0F0E0D] text-[#FCF9F2] text-[10.5px] font-medium tracking-[0.2em] uppercase hover:bg-[#2B2825] disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                {submitted ? (
+                {sending ? (
+                  <span>SENDING INQUIRY...</span>
+                ) : submitted ? (
                   <>
                     <RiCheckLine size={15} aria-hidden="true" />
                     <span>MESSAGE SENT</span>
@@ -169,9 +189,15 @@ const ContactFormSection = () => {
                 )}
               </button>
 
+              {submitError && (
+                <p role="alert" className="text-[12.5px] text-[#8E2A20]">
+                  {submitError}
+                </p>
+              )}
+
               {submitted && (
                 <p className="text-[12.5px] text-[#5E5951]">
-                  Thank you. Our concierge team will respond within one business day.
+                  Thank you. Your inquiry has been emailed to our concierge team, and a confirmation receipt has been sent to your inbox.
                 </p>
               )}
             </form>

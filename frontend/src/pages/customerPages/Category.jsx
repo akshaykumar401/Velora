@@ -1,15 +1,18 @@
+import { useAppSelector } from '../../App/hooks.js'
 import {
   CategoryHero,
   CategoryMaterialsBanner,
   CategoryShowcaseGrid,
 } from '../../components/category'
-import { ATELIER_MATERIALS, CATEGORIES } from '../../data/catalogData.js'
+import { ATELIER_MATERIALS } from '../../data/editorialData.js'
 
 const Category = () => {
+  const categories = useAppSelector((state) => state.catalog.categories)
+
   return (
     <>
       <CategoryHero />
-      <CategoryShowcaseGrid categories={CATEGORIES} />
+      <CategoryShowcaseGrid categories={categories} />
       <CategoryMaterialsBanner materials={ATELIER_MATERIALS} />
     </>
   )
